@@ -10,8 +10,8 @@
 #include <FS.h>
 #include <SD.h>
 
-#define ssid        // WiFi SSID
-#define password    // WiFi password
+#include "wifi_ssid_password.h"
+
 #define FS_NO_GLOBALS
 #define SD_CS   5
 #define HALFSTEP 8
