@@ -11,21 +11,22 @@
 #include <SD.h>
 
 #include "wifi_ssid_password.h"
+#include "setup_pins.h"
 
 #define FS_NO_GLOBALS
-#define SD_CS   5
-#define HALFSTEP 8
+
+#define SPI_FREQUENCY  40000000
 
 
 TFT_eSPI tft = TFT_eSPI();
-AccelStepper stepper1(HALFSTEP, 27, 12, 14, 13);
+AccelStepper stepper1(8, stepper_pin_1, stepper_pin_3, stepper_pin_2, stepper_pin_4); // NOTE: The sequence 1-3-2-4 is required for proper sequencing of 28BYJ-48
 
-int layerheight = 100;
-int exposure_time = 15;
+int layerheight = 0;
+int exposure_time = 0;
 int exposure_time_print;
 int stepper_speed = 1500;
 int stepper_accl = 1500;
-int rise_height = 5;
+int rise_height = 0;
 int steps_per_layer;
 float steps_per_um = 5.094716;
 int stepperlayer = 0;

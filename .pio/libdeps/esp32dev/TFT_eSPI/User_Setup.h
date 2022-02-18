@@ -356,6 +356,6 @@
 // Transaction support is required if other SPI devices are connected.
 
 // Transactions are automatically enabled by the library for an ESP32 (to use HAL mutex)
-// so changing it here has no effect
+// so changing it here has no effect.
 
 // #define SUPPORT_TRANSACTIONS
