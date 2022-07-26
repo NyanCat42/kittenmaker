@@ -4,22 +4,23 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 #include <AccelStepper.h>
-#include <TJpg_Decoder.h>
-#include <TFT_eSPI.h>
 #include <SPI.h>
 #include <FS.h>
 #include <SD.h>
 
+#include <TFT_eSPI.h>              // Hardware-specific library
+TFT_eSPI tft = TFT_eSPI();         // Invoke custom library
+
 #include "wifi_ssid_password.h"
 #include "setup_pins.h"
 
+#define USE_LINE_BUFFER
 #define FS_NO_GLOBALS
 
-#define SPI_FREQUENCY  40000000
 
-
-TFT_eSPI tft = TFT_eSPI();
 AccelStepper stepper1(8, stepper_pin_1, stepper_pin_3, stepper_pin_2, stepper_pin_4); // NOTE: The sequence 1-3-2-4 is required for proper sequencing of 28BYJ-48
+
+#include "support_functions.h"
 
 int layerheight = 0;
 int exposure_time = 0;
@@ -41,12 +42,7 @@ bool not_home = 1;
 
 WebServer server ( 80 );
 
-bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
-{
-  if ( y >= tft.height() ) return 0;
-  tft.pushImage(x, y, w, h, bitmap);
-  return 1;
-}
+
 
 String getHTML(){
   String html ="<!DOCTYPE html> <html> <head> <meta charset=\"UTF-8\" /> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /> <meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\" /> <link rel=\"stylesheet\" href=\"https://use.fontawesome.com/releases/v5.0.13/css/all.css\" integrity=\"sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp\" crossorigin=\"anonymous\" /> <link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css\" integrity=\"sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB\" crossorigin=\"anonymous\" /> <link rel=\"stylesheet\" href=\"https://drive.google.com/uc?export=view&id=1mhw1DqORWk2bltFuDr9H43TA1usdWe1Y\" /> <title>kittenmaker v0.2</title> </head> <body> <div class=\"container-fluid\"> <div class=\"row\"> <div class=\"col-md-4\"> </div> <div class=\"col-md-4\"> <h6> &zwnj; </h6> <h2 class=\"text-center\"> kittenmaker 0.2.0 </h2> </div> <div class=\"col-md-4\"> </div> </div> <div class=\"row\"> <div class=\"col-md-4\"> </div> <div class=\"col-md-4\"> <h3> &zwnj; </h3> <form action='/' method='POST'><button type='button submit' name='P' class='btn btn-success btn-block btn-lg mt-1 mb-1'>Print</button></form> <h3> &zwnj; </h3> <h3 class=\"text-center\"> Layerheight: ";
@@ -186,11 +182,7 @@ void setup() {
   }
 
   tft.begin();
-  tft.setTextColor(0xFFFF, 0x0000);
-  tft.fillScreen(TFT_BLACK);
-  tft.setSwapBytes(true);
   tft.setRotation(1);
-  TJpgDec.setCallback(tft_output);
 
 }
 
@@ -240,10 +232,16 @@ void loop() {
 
   if(print_started == true){
 
-    server.handleClient();
+    
 
     String layerstr = String(layer);
-    TJpgDec.drawSdJpg(0, 0, "/"+layerstr+".jpg");
+    String layerfilename = "/"+layerstr+".png";
+    const char* layerfilenameconst = layerfilename.c_str();
+    tft.fillScreen(0);
+    setPngPosition(0, 0);
+    load_file(SD, layerfilenameconst);
+
+    server.handleClient();
 
 
     if(layer < 3){
@@ -276,12 +274,12 @@ void loop() {
     stepperlayer = stepperlayer + 1;
       
     File image;
-    image = SD.open("/"+layerstr+".jpg");
+    image = SD.open("/"+layerstr+".png");
     Serial.println ( image.name() ); 
       
     if (! image) {
       print_started = false;
-      tft.fillScreen(TFT_BLACK);
+      tft.fillScreen(0);
       layer = 1;
       stepperlayer = 0;
     }
