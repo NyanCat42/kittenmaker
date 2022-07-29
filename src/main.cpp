@@ -1,36 +1,43 @@
 #include <Arduino.h>
+
+
+#include <SPI.h>
+#include <FS.h>
+#include <SD.h>
+#define FS_NO_GLOBALS
+
+#include <GCodeParser.h>
+GCodeParser GCode = GCodeParser();
+
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
-#include <AccelStepper.h>
-#include <SPI.h>
-#include <FS.h>
-#include <SD.h>
-
-#include <TFT_eSPI.h>              // Hardware-specific library
-TFT_eSPI tft = TFT_eSPI();         // Invoke custom library
-
 #include "wifi_ssid_password.h"
 #include "setup_pins.h"
 
-#define USE_LINE_BUFFER
-#define FS_NO_GLOBALS
-
-
+#include <AccelStepper.h>
 AccelStepper stepper1(8, stepper_pin_1, stepper_pin_3, stepper_pin_2, stepper_pin_4); // NOTE: The sequence 1-3-2-4 is required for proper sequencing of 28BYJ-48
 
+#include <TFT_eSPI.h>
+TFT_eSPI tft = TFT_eSPI();
+
+#define USE_LINE_BUFFER
 #include "support_functions.h"
 
 int layerheight = 0;
+
 int exposure_time = 0;
+int bottom_exposure_time = 0;
 int exposure_time_print;
-int stepper_speed = 1500;
-int stepper_accl = 1500;
+
+int stepper_speed = 1000;
+int stepper_accl = 1000;
+
 int rise_height = 0;
+
 int steps_per_layer;
 float steps_per_um = 5.094716;
-int stepperlayer = 0;
 int layer = 1;
 bool print_started = false;
 bool calibrating = false;
@@ -38,6 +45,14 @@ bool raising = false;
 int file_count = 0;
 int rise_height_steps = 0;
 bool not_home = 1;
+String filename;
+int bottom_layer_count = 3;
+int layercount;
+int bottom_rise_height = 5;
+int bottom_stepper_speed = 1000;
+
+
+
 
 
 WebServer server ( 80 );
@@ -184,10 +199,82 @@ void setup() {
   tft.begin();
   tft.setRotation(1);
 
+    File gCodeFile = SD.open("/run.gcode");
+    if (gCodeFile)
+    {
+      int settingsLenght = 1;
+      while (gCodeFile.available() && settingsLenght <= 27)
+      {
+        if (GCode.AddCharToLine(gCodeFile.read()))
+        {
+          GCode.ParseLine();
+
+          GCode.RemoveCommentSeparators();
+
+          Serial.print("Comment(s): ");
+          Serial.println(GCode.comments);
+
+          if(settingsLenght == 8){
+              layerheight = String(GCode.comments).substring(12).toFloat()*1000;
+              Serial.println(layerheight);
+          }
+
+          if(settingsLenght == 15){
+              exposure_time = String(GCode.comments).substring(19).toInt();
+              Serial.println(exposure_time);
+          }
+
+          if(settingsLenght == 17){
+              bottom_exposure_time = String(GCode.comments).substring(24).toInt();
+              Serial.println(bottom_exposure_time);
+          }
+
+          if(settingsLenght == 19){
+              rise_height = String(GCode.comments).substring(22).toInt();
+              Serial.println(rise_height);
+          }
+
+          if(settingsLenght == 21){
+              stepper_speed = String(GCode.comments).substring(21).toInt();
+              Serial.println(stepper_speed);
+          }
+
+          if(settingsLenght == 1){
+              filename = String(GCode.comments).substring(9);
+              Serial.println(filename);
+          }
+
+          if(settingsLenght == 23){
+              bottom_layer_count = String(GCode.comments).substring(17).toInt();
+              Serial.println(bottom_layer_count);
+          }
+
+          if(settingsLenght == 25){
+              layercount = String(GCode.comments).substring(11).toInt();
+              Serial.println(layercount);
+          }
+
+          if(settingsLenght == 26){
+              bottom_rise_height = String(GCode.comments).substring(22).toInt();
+              Serial.println(bottom_rise_height);
+          }
+
+          if(settingsLenght == 27){
+              bottom_stepper_speed = String(GCode.comments).substring(21).toInt();
+              Serial.println(bottom_stepper_speed);
+          }
+
+          settingsLenght++;
+
+        }
+      }  
+    }
+  
 }
 
 void loop() {
   
+
   stepper1.setAcceleration(stepper_accl);
   stepper1.setSpeed(stepper_speed);
   stepper1.setMaxSpeed(stepper_speed);
@@ -233,19 +320,16 @@ void loop() {
   if(print_started == true){
 
     
-
     String layerstr = String(layer);
     String layerfilename = "/"+layerstr+".png";
     const char* layerfilenameconst = layerfilename.c_str();
-    tft.fillScreen(0);
     setPngPosition(0, 0);
     load_file(SD, layerfilenameconst);
 
     server.handleClient();
 
-
-    if(layer < 3){
-      exposure_time_print = exposure_time * 4;
+    if(layer <= bottom_layer_count){
+      exposure_time_print = bottom_exposure_time;
     }else {
       exposure_time_print = exposure_time;
     }
@@ -255,7 +339,15 @@ void loop() {
     digitalWrite(26, 1);
 
     steps_per_layer = steps_per_um * layerheight + 0.5;
-    rise_height_steps = rise_height * 1000 * steps_per_um;
+    if(layer <= bottom_layer_count){
+      rise_height_steps = bottom_rise_height * 1000 * steps_per_um;
+      stepper1.setSpeed(bottom_stepper_speed);
+      stepper1.setMaxSpeed(bottom_stepper_speed);
+    }else {
+      rise_height_steps = rise_height * 1000 * steps_per_um;
+      stepper1.setSpeed(stepper_speed);
+      stepper1.setMaxSpeed(stepper_speed);
+    }
 
     stepper1.moveTo(stepper1.currentPosition() + steps_per_layer + rise_height_steps);
 
@@ -269,22 +361,19 @@ void loop() {
       stepper1.run();
     } while (stepper1.distanceToGo() != 0);
 
-
     layer = layer + 1;
-    stepperlayer = stepperlayer + 1;
       
-    File image;
-    image = SD.open("/"+layerstr+".png");
-    Serial.println ( image.name() ); 
+    //File image;
+    //image = SD.open("/"+layerstr+".png");
+    //Serial.println ( image.name() ); 
       
-    if (! image) {
+    if (layercount < layer) {
       print_started = false;
       tft.fillScreen(0);
       layer = 1;
-      stepperlayer = 0;
     }
 
-    image.close();
+    //image.close();
 
       
    }
