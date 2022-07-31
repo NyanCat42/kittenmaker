@@ -1,11 +1,28 @@
 ## kittenmaker
 
-this is code for the *kittenmaker* - a ESP32 based msla 3d printer
+*kittenmaker* - an ESP32 based msla 3d printer
 
 
-it uses an ILI9341 TFT display and a 28byj-48-5v stepper with a uln2003 stepper driver
+Uses an ILI9341 TFT display and a 28byj-48-5v stepper motor.
 
-![kitten printed with the kittenmaker](https://lh3.googleusercontent.com/pw/AM-JKLXx8yeN9j575UpLOkJ7RLr7wzE_ifbnpWgaUBCUnXeyVt-REW0xWfRz7XX1o0cwzc1uw5NDJYop6nW0ctbrR-SJ4b1mgi5SbSPeGkTtPowvGx7pYwwi4baLZcYsyPPxAdybOaUTGFHP417mKtKVdQUp=w487-h649-no?authuser=0)
+![kitten printed with the kittenmaker](https://lh3.googleusercontent.com/pw/AL9nZEWN3NJFMLn3OMjo50ghIfKllBKp2MhMhdCaCMCpDuatDkgnHunnf0MEBwoN5fabmUFF4cY3slS0em1Zu45puiBrZHZCIA-tX6NBHSylEX8I36wOzJneq33L0RE0n-WUECNht75Gb1qvhtkIw0CNfAFsng=w487-h649-no?authuser=0)
+
+## Hardware
+
+3D printed body, vat, z-carriage
+
+320x240 ili9341 TFT display (~0.14mm xy resolution).
+28byj-48-5v stepper motor with uln2003 driver.
+ESP32 development board.
+3W 405nm UV LED.
+
+## Software
+
+Slicer [Chitubox 1.8 beta](https://www.chitubox.com/en/download/chitubox-free).
+
+
+
+
 
 
 
