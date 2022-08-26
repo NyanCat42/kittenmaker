@@ -1,13 +1,10 @@
-// #define TFT_MISO 19
-// #define TFT_MOSI 23
-// #define TFT_SCLK 18
-// #define TFT_CS   15
-// #define TFT_DC    2
-// #define TFT_RST   4
+#define SD_CS   1
 
-#define SD_CS   5
+#define UV_LED   37
 
-#define stepper_pin_1 27
-#define stepper_pin_2 14
-#define stepper_pin_3 12
-#define stepper_pin_4 13
+#define Home_Switch   39
+
+#define stepper_pin_1 16
+#define stepper_pin_2 18
+#define stepper_pin_3 33
+#define stepper_pin_4 35

@@ -67,7 +67,7 @@ String getHTML(){
   html +="s </h3> <div class=\"row\"> <div class=\"col-md-6\"> <form action='/' method='POST'><button type='button submit' name='TD' class='btn btn-primary btn-block mt-1 mb-1'>lower</button></form></div> <div class=\"col-md-6\"> <form action='/' method='POST'><button type='button submit' name='TU' class='btn btn-primary btn-block mt-1 mb-1'>raise</button></form></div> </div> </div> <div class=\"col-md-4\"> </div> </div> <div class=\"row\"> <div class=\"col-md-4\"> </div> <div class=\"col-md-4\"> <h1> &zwnj; </h1> <h3 class=\"text-muted text-center\"> Stepper speed, acceleration: </h3> <div class=\"row\"> <div class=\"col-md-6\"> <h3 class=\"text-muted text-center\"> ";
   html += stepper_speed;
   html +="mm/s </h3> </div> <div class=\"col-md-6\"> <h3 class=\"text-muted text-center\"> ";
-  html += stepper_accl;
+  html += layer;
   html +="mm/ss </h3> </div> </div> <div class=\"row\"> <div class=\"col-md-3\"> <form action='/' method='POST'><button type='button submit' name='SD' class='btn btn-secondary btn-block mt-1 mb-1'>lower</button></form></div> <div class=\"col-md-3\"> <form action='/' method='POST'><button type='button submit' name='SU' class='btn btn-secondary btn-block mt-1 mb-1'>raise</button></form></div> <div class=\"col-md-3\"> <form action='/' method='POST'><button type='button submit' name='AD' class='btn btn-secondary btn-block mt-1 mb-1'>lower</button></form></div> <div class=\"col-md-3\"> <form action='/' method='POST'><button type='button submit' name='AU' class='btn btn-secondary btn-block mt-1 mb-1'>raise</button></form></div> </div> <h3 class=\"text-muted text-center\"> Rise height: ";
   html += rise_height;
   html +="mm </h3> <div class=\"row\"> <div class=\"col-md-6\"> <form action='/' method='POST'><button type='button submit' name='RD' class='btn btn-secondary btn-block mt-1 mb-1'>lower</button></form></div> <div class=\"col-md-6\"> <form action='/' method='POST'><button type='button submit' name='RU' class='btn btn-secondary btn-block mt-1 mb-1'>raise</button></form></div> </div> <h3> &zwnj; </h3> <form action='/' method='POST'><button type='button submit' name='CX' class='btn btn-warning btn-block mt-1 mb-1'>calibrate</button></form></div> <div class=\"col-md-4\"> </div> </div> </div>";
@@ -174,9 +174,9 @@ void handleRoot(){
 
 void setup() {
   
-  pinMode(25, INPUT_PULLUP); // homing switch
-  pinMode(26, OUTPUT);       // uv led driver (high is off)
-  digitalWrite(26, 1);       // turn led off
+  pinMode(Home_Switch, INPUT_PULLUP); // homing switch
+  pinMode(UV_LED, OUTPUT);       // uv led driver (high is off)
+  digitalWrite(UV_LED, 1);       // turn led off
   
   Serial.begin ( 115200 );
   
@@ -193,7 +193,6 @@ void setup() {
 
   if (!SD.begin(SD_CS)) {
     Serial.println(F("SD.begin failed!"));
-    while (1) delay(0);
   }
 
   tft.begin();
@@ -281,7 +280,7 @@ void loop() {
   
   server.handleClient(); 
 
-  not_home = digitalRead(25);
+  not_home = digitalRead(Home_Switch);
 
   if(raising == true){
     
@@ -304,10 +303,10 @@ void loop() {
 
     do {
      stepper1.run();
-     not_home = digitalRead(25);
+     not_home = digitalRead(Home_Switch);
     } while (not_home == 1 && stepper1.distanceToGo() != 0);
 
-    not_home = digitalRead(25);
+    not_home = digitalRead(Home_Switch);
 
     if(not_home == 0){
     calibrating = false;
@@ -334,9 +333,9 @@ void loop() {
       exposure_time_print = exposure_time;
     }
 
-    digitalWrite(26, 0);
+    digitalWrite(UV_LED, 0);
     delay(exposure_time_print*1000);
-    digitalWrite(26, 1);
+    digitalWrite(UV_LED, 1);
 
     steps_per_layer = steps_per_um * layerheight + 0.5;
     if(layer <= bottom_layer_count){
@@ -371,6 +370,7 @@ void loop() {
       print_started = false;
       tft.fillScreen(0);
       layer = 1;
+      raising = true;
     }
 
     //image.close();
