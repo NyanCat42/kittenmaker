@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="color-scheme" content="light dark">
+
+    <title>kittenmaker web interface</title>
+	<link rel="icon" type="image/x-icon" href="slacatfavi.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
+
+  </head>
+  <body>
+
+    <div class="container-fluid px-3 py-3">
+		<h2>
+			kittenmaker V0.5.0
+		</h2>
+		<hr/>
+		<div class="row">
+			<div class="col-md-6">
+				
+				<h4>
+					<span id="fileName"></span>
+				</h4>
+				<div class="btn-group btn-group-lg" role="group">
+					<button onclick="buttonPress(6)" id="button1" type="button" class="btn btn-primary" >Print</button>
+					<button onclick="buttonPress(7)" id="button2" type="button" class="btn btn-secondary">Stop</button>
+					<button onclick="buttonPress(8)" id="button3" type="button" class="btn btn-secondary">Home</button>
+					<button onclick="buttonPress(9)" id="button4" type="button" class="btn btn-secondary">Raise</button>
+				  </div>
+				  	<h4>
+						&#8203;
+					</h4>
+				  	<h4>
+						<span id="estimatedTime"></span>
+					</h4>
+				<div class="progress">
+					<div id="progressBar" class="progress-bar" role="progressbar" style="width: 25%;" aria-valuemin="0" aria-valuemax="100"></div>
+				</div>
+				<h4>
+					&#8203;
+				</h4>
+			</div>
+			<div class="col-md-6">
+			 
+				<label for="input1" class="form-label">Layerheight: <span id="inputValue1"></span> μm</label>
+				<input type="range" class="form-range" min="50" max="150" step="10" id="input1" onchange="updateInput(this)">
+
+				<label for="input2" class="form-label">Exposure time: <span id="inputValue2"></span> s</label>
+				<input type="range" class="form-range" min="5" max="30" step="1" id="input2" onchange="updateInput(this)">
+
+				<label for="input3" class="form-label">Initial exposure time: <span id="inputValue3"></span> s</label>
+				<input type="range" class="form-range" min="20" max="60" step="1" id="input3" onchange="updateInput(this)">
+
+				<label for="input4" class="form-label">Lift height: <span id="inputValue4"></span> mm</label>
+				<input type="range" class="form-range" min="0" max="10" step="1" id="input4" onchange="updateInput(this)">
+
+				<label for="input5" class="form-label">Initial lift height: <span id="inputValue5"></span> mm</label>
+				<input type="range" class="form-range" min="0" max="10" step="1" id="input5" onchange="updateInput(this)">
+
+				<h1>
+					&#8203;
+				</h1>
+
+			</div>
+		</div>
+		
+	</div>
+
+
+	<footer class="footer fixed-bottom mt-auto py-3 bg-dark">
+		<div class="container">
+		  <span class="text-muted"><a href="https://github.com/NyanCat42/kittenmaker" class="link-secondary">https://github.com/NyanCat42/kittenmaker</a></span>
+		</div>
+	  </footer>
+
+
+	  <script src="script.js"></script>
+
+</body>
+</html>
