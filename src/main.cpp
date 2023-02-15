@@ -34,7 +34,7 @@ int stepper_speed = 1000;
 int stepper_accl = 1000;
 int rise_height = 0;
 int steps_per_layer;
-float steps_per_um = 5.094716;
+float steps_per_um = 1.0189432; // or, to be more precise - 1.018943209876543209876543209876543209876543209876543209876543209876543209876543209876543209876543209876543209876543209876543209877
 int layer = 1;
 bool print_started = false;
 bool calibrating = false;
