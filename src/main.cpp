@@ -100,6 +100,36 @@ void notifyClients(String inputValues) {
   ws.textAll(inputValues);
 }
 
+// Handle the received file data
+void handleFileUpload(void *arg, uint8_t *data, size_t len) {
+  // Get the websocket client
+  AsyncWebSocketClient *client = (AsyncWebSocketClient*)arg;
+
+  // Convert the received binary data to a string
+  String dataString = String((const char*)data);
+
+  // Get the file name from the first line of the received data
+  int firstLineBreakPos = dataString.indexOf("\n");
+  String fileName = dataString.substring(0, firstLineBreakPos);
+
+  // Get the file data from the remaining lines of the received data
+  String fileData = dataString.substring(firstLineBreakPos + 1);
+
+  // Open a file with the received file name in the SPIFFS
+  File file = SPIFFS.open(fileName, "w");
+  if (!file) {
+    Serial.println("Failed to open file for writing");
+    return;
+  }
+
+  // Write the file data to the file
+  file.print(fileData);
+  file.close();
+
+  Serial.println("File written to SPIFFS");
+}
+
+
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   AwsFrameInfo *info = (AwsFrameInfo*)arg;
   if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
@@ -154,7 +184,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       notifyClients(getInputValues());
     }
     if (strcmp((char*)data, "getValues") == 0) {
-      notifyClients(getInputValues());
+      handleFileUpload(arg, data, len);
     }
   }
 }
@@ -283,6 +313,7 @@ void setup() {
 }
 
 void loop() {
+
 
   stepper1.setAcceleration(stepper_accl);
   stepper1.setSpeed(stepper_speed);
