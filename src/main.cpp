@@ -245,7 +245,7 @@ void parseGcode() {
   inputValue3 = String(bottom_exposure_time);
   inputValue4 = String(rise_height);
   inputValue5 = String(bottom_rise_height);
-  printTime = bottom_layer_count*bottom_rise_height*11+(layercount-bottom_layer_count)*rise_height*11+bottom_layer_count*bottom_exposure_time+(layercount-bottom_layer_count)*exposure_time;
+  printTime = bottom_layer_count*bottom_rise_height*2+(layercount-bottom_layer_count)*rise_height*2+bottom_layer_count*bottom_exposure_time+(layercount-bottom_layer_count)*exposure_time;
   Serial.println(printTime);
   secToHMS();
 }
@@ -274,6 +274,10 @@ void setup() {
   
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(SPIFFS, "/index.html", "text/html");
+  });
+
+  server.on("/preview", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(SD, "/preview.png", "image/png");
   });
   
   server.serveStatic("/", SPIFFS, "/");
