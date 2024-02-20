@@ -2,6 +2,8 @@
 
 *kittenmaker* - an ESP32 based msla 3d printer
 
+## YouTube video showcase 
+
 [![Showcase video](https://img.youtube.com/vi/y37ohpzv8kI/0.jpg)](https://www.youtube.com/watch?v=y37ohpzv8kI)
 
 ## Features 
